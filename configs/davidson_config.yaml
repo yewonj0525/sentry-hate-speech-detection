@@ -1,0 +1,78 @@
+# davidson_config.yaml
+# SENTRY Project - Davidson Experiment Hyperparameters
+# Author: Yewon Joung
+
+# ── Model ──────────────────────────────────────────────
+model:
+  encoder_name: "distilbert-base-uncased"   # Pretrained encoder (66M params)
+  hidden_dim: 768                            # DistilBERT output dimension
+  num_classes: 3                             # hate / offensive / neutral
+
+# ── Data ───────────────────────────────────────────────
+data:
+  raw_path: "data/labeled_data.csv"
+  augmented_path: "data/labeled_data_augmented.csv"
+  set_size: 5                                # K tweets per set
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  random_state: 42
+
+# ── Augmentation ───────────────────────────────────────
+augmentation:
+  multipliers:
+    0: 5                                     # hate class x5
+    2: 2                                     # neutral class x2
+  languages:
+    - french
+    - german
+    - spanish
+
+# ── Training ───────────────────────────────────────────
+training:
+  epochs: 10
+  batch_size: 8
+  lr_encoder: 2.0e-6                         # small lr: preserve pretrained weights
+  lr_classifier: 2.0e-5                      # larger lr: train from scratch
+  grad_clip: 1.0
+  mixed_precision: true
+
+# ── Loss ───────────────────────────────────────────────
+loss:
+  lambda_ce: 1.0                             # Cross Entropy weight (always on)
+  lambda_tweet: 0.1                          # Tweet-level DPO weight
+  lambda_set: 0.5                            # Set-level DPO weight
+  beta_dpo: 0.1                              # DPO temperature
+
+# ── Experiments ────────────────────────────────────────
+experiments:
+  exp1:
+    name: "Baseline (Sets + CE + Mean Pooling)"
+    pooling: "mean"
+    equivariant: false
+    use_dpo: false
+  exp2:
+    name: "Sets + DPO + Mean Pooling"
+    pooling: "mean"
+    equivariant: false
+    use_dpo: true
+  exp3:
+    name: "Sets + DPO + Attention Pooling"
+    pooling: "attention"
+    equivariant: false
+    use_dpo: true
+  exp4:
+    name: "Equivariant + Mean Pooling"
+    pooling: "mean"
+    equivariant: true
+    use_dpo: true
+  exp5:
+    name: "Equivariant + Attention Pooling + DPO (BEST)"
+    pooling: "attention"
+    equivariant: true
+    use_dpo: true
+  exp6:
+    name: "Equivariant + CE only (no DPO)"
+    pooling: "mean"
+    equivariant: true
+    use_dpo: false
