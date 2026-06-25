@@ -2,21 +2,19 @@
 
 > A set-based NLP framework that detects hate speech by analyzing groups of semantically related tweets — rather than isolated posts — using permutation-equivariant architectures and hierarchical contrastive optimization.
 
-📄 [Full Paper (PDF)](./SENTRY_FinalReport.pdf) | 👥 Team Project (UNC Chapel Hill, COMP 562)
-
 ---
 
-## 🔍 Project Overview
+## 📌 Project Overview
 
-Traditional hate speech detection classifies each post in isolation. **SENTRY** takes a different approach: it groups semantically related tweets into *sets* and learns context-aware representations across them.
+Traditional hate speech detection classifies each post in isolation, missing contextual patterns across related messages. **SENTRY** addresses this by grouping semantically related tweets into *sets* and learning context-aware representations across them.
 
-Key ideas:
-- **Set-based modeling**: tweets are grouped via unsupervised K-means clustering
-- **Permutation-equivariant architecture**: set representations are order-independent
-- **Hierarchical DPO loss**: contrastive objectives applied at both tweet and set levels
+**Key ideas:**
+- Tweets are grouped into sets via unsupervised K-means clustering
+- Permutation-equivariant architecture ensures order-independent set representations
+- Hierarchical DPO loss applies contrastive objectives at both tweet and set levels
 - Evaluated on two datasets: **Davidson** (tweet classification) and **DIALOCONAN** (dialogue classification)
 
-**Best result**: Macro-F1 **0.847** on Davidson dataset (Equivariant + Attention Pooling + DPO)
+**Best result:** Macro-F1 **0.847** on Davidson dataset (Equivariant + Attention Pooling + DPO)
 
 ---
 
@@ -38,20 +36,17 @@ Designed and ran 6 progressive experiments to isolate the contribution of each c
 | Experiment | Configuration | Purpose |
 |---|---|---|
 | Exp 1 | Sets + Cross Entropy + Mean Pooling | Baseline |
-| Exp 2 | Sets + DPO | Does contrastive loss help? |
+| Exp 2 | Sets + DPO + Mean Pooling | Does contrastive loss help? |
 | Exp 3 | Sets + Attention Pooling + DPO | Does attention pooling help? |
 | Exp 4 | Equivariant + Mean Pooling | Does equivariant architecture help? |
 | Exp 5 | Equivariant + Attention Pooling + DPO | Full model (best) |
 | Exp 6 | Equivariant + Cross Entropy only | Ablation: DPO vs. no DPO |
 
-**Default configuration I used:**
-- Encoder: DistilBERT (66M params)
-- Set size: K = 5
-- Pooling: Mean (Exp 1–2) → Attention (Exp 3, 5)
-- Loss weights: λ_CE = 1.0, λ_tweet = 0.1, λ_set = 0.5, β = 0.1
-- Optimizer: AdamW | Epochs: 10 | Batch size: 8
+---
 
-**Key results (Exp 5, best model):**
+## 📊 Key Results
+
+**Davidson Dataset (Exp 5 — Best Model):**
 
 | Class | Precision | Recall | F1 |
 |---|---|---|---|
@@ -60,58 +55,71 @@ Designed and ran 6 progressive experiments to isolate the contribution of each c
 | Neutral | 96.0% | 96.0% | 96.0% |
 | **Macro** | | | **83.7%** |
 
+**Key finding:** Set-based aggregation with equivariant architecture and hierarchical contrastive optimization substantially outperforms single-instance baselines across all classes.
+
+---
+
+## 📁 Project Structure
+
+```
+├── data/
+│   └── preprocess.py        # Data cleaning, set construction, train/val/test split
+├── experiments/
+│   └── run_davidson.py      # Experiment 1–6 design and execution
+├── configs/
+│   └── davidson_config.yaml # Hyperparameter settings
+├── augmentation.py          # Back-translation data augmentation
+├── requirements.txt
+└── README.md
+```
+
+> **Note:** Raw data not included. Download the Davidson dataset from [Kaggle](https://www.kaggle.com/datasets/mrmorj/hate-speech-and-offensive-language-dataset).
+
+---
+
+## ⚙️ Setup & Usage
+
+### 1. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Prepare data
+```bash
+# Place labeled_data.csv in data/
+python data/preprocess.py
+```
+
+### 3. Run augmentation
+```bash
+python augmentation.py
+```
+
+### 4. Run experiments
+```bash
+# Run all 6 experiments
+python experiments/run_davidson.py
+```
+
 ---
 
 ## 🛠️ Tech Stack
 
-- **Language**: Python
-- **Models**: DistilBERT (HuggingFace Transformers)
-- **Frameworks**: PyTorch
-- **Tools**: scikit-learn (K-means clustering), MarianMT (back-translation), NumPy, Git
-- **Hardware**: NVIDIA A100 GPU (40GB)
-
----
-
-## 📁 Repository Structure
-
-```
-├── config/          # Experiment configuration files
-├── data/            # Preprocessed datasets
-├── experiments/     # Experiment results and logs
-├── losses/          # DPO loss implementations
-├── models/          # Model architectures
-├── training/        # Training pipeline
-├── utils/           # Helper functions
-├── main.py          # Entry point
-├── requirements.txt # Dependencies
-└── run_experiments.sh  # Script to reproduce experiments
-```
-
----
-
-## 🚀 Getting Started
-
-```bash
-# Clone the repository
-git clone https://github.com/yewonj0525/sentry-hate-speech-detection.git
-cd sentry-hate-speech-detection
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run default experiment (Exp 5: Equivariant + Attention + DPO)
-python main.py
-```
+- **Language:** Python
+- **Models:** DistilBERT (HuggingFace Transformers)
+- **Frameworks:** PyTorch
+- **Tools:** scikit-learn (K-means), MarianMT (back-translation), NumPy, Git
+- **Hardware:** NVIDIA A100 GPU (40GB)
 
 ---
 
 ## 👥 Team
 
-| Name | Contribution |
+| Name | Role |
 |---|---|
 | Yewon Joung | Data preprocessing & augmentation, Davidson experiment design & execution |
-| Amogh Gupta | Model architecture (equivariant layers) |
-| Yuvraj Jain | DPO loss implementation, DIALOCONAN experiments |
-| Paritosh Pandey | Set construction, evaluation pipeline |
+| Amogh Gupta | — |
+| Yuvraj Jain | — |
+| Paritosh Pandey | — |
 
-*UNC Chapel Hill — COMP 562: Machine Learning (Fall 2024)*
+*UNC Chapel Hill — COMP 755: Machine Learning (Fall 2025)*
